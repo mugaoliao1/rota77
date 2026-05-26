@@ -2,7 +2,7 @@
 // A versão é injetada automaticamente em postbuild (scripts/inject-sw-version.mjs)
 // Para forçar atualização manual: basta fazer um novo deploy
 
-const BUILD_VERSION = 'mpn67tce'
+const BUILD_VERSION = 'mpn6u65n'
 const CACHE_STATIC  = 'midiacar-static-'  + BUILD_VERSION
 const CACHE_DYNAMIC = 'midiacar-dynamic-' + BUILD_VERSION
 

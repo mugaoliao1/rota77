@@ -27,10 +27,11 @@ async function fazerLogin() {
   const p = document.getElementById('login-pass').value
   if (!u || !p) { document.getElementById('erro-login').style.display = 'block'; return }
   try {
-    await firebase.auth().signInWithEmailAndPassword(u + '@painel.midiacar', p)
+    await firebase.auth().signInWithEmailAndPassword(u, p)
     document.getElementById('erro-login').style.display = 'none'
     // onAuthStateChanged cuida da abertura do painel
   } catch (e) {
+    console.error('[painel/auth] erro login:', e.code, e.message)
     document.getElementById('erro-login').style.display = 'block'
   }
 }
