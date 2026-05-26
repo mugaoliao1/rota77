@@ -41,3 +41,15 @@ function mostrarToast(msg, cls) {
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+
+async function deletar(colecao, id) {
+  if (!confirm('Confirmar exclusão?')) return
+  try {
+    await db.ref(`rotaads/${colecao}/${id}`).remove()
+    mostrarToast('✅ Item excluído!', 'sucesso')
+  } catch (e) {
+    console.error('[painel/deletar]', e)
+    mostrarToast('❌ Erro ao excluir: ' + e.message, 'erro')
+  }
+}
+window.deletar = deletar
