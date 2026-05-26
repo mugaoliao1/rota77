@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MídiaCar — Ambiente de Desenvolvimento</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+    }
+    .logo { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+    .logo em { color: #D7282B; font-style: normal; }
+    .env-badge {
+      background: rgba(215,40,43,0.12);
+      border: 1px solid rgba(215,40,43,0.3);
+      color: #D7282B;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+    .apps {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .app-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 28px 36px;
+      background: #141414;
+      border: 1px solid #222;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      transition: border-color 0.2s, background 0.2s;
+      min-width: 160px;
+    }
+    .app-link:hover {
+      border-color: rgba(215,40,43,0.5);
+      background: rgba(215,40,43,0.06);
+    }
+    .app-icon { font-size: 32px; }
+    .app-name { font-size: 14px; font-weight: 700; }
+    .app-desc { font-size: 11px; color: #555; }
+    .footer { font-size: 11px; color: #333; }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="logo">MÍDIA<em>CAR</em></div>
+  </div>
+  <span class="env-badge">Ambiente de desenvolvimento</span>
+  <div class="apps">
+    <a href="/tablet.html" class="app-link">
+      <span class="app-icon">📺</span>
+      <span class="app-name">Tablet</span>
+      <span class="app-desc">Player do carro</span>
+    </a>
+    <a href="/portal.html" class="app-link">
+      <span class="app-icon">📊</span>
+      <span class="app-name">Portal</span>
+      <span class="app-desc">Anunciante</span>
+    </a>
+    <a href="/painel.html" class="app-link">
+      <span class="app-icon">⚙️</span>
+      <span class="app-name">Painel</span>
+      <span class="app-desc">Gestão</span>
+    </a>
+  </div>
+  <p class="footer">MídiaCar · Caçapava do Sul/RS</p>
+</body>
+</html>

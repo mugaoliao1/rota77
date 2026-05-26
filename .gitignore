@@ -1,0 +1,21 @@
+# Dependências
+node_modules/
+
+# Build de produção — gerado pelo Vite (npm run build)
+dist/
+
+# Arquivos de rascunho/backup com nomes antigos
+midiacar_tablet*.html
+midiacar_portal*.html
+rotaads_painel*.html
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Env (caso criado futuramente)
+.env
+.env.*
+!.env.example
