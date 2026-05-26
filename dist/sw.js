@@ -2,7 +2,7 @@
 // A versão é injetada automaticamente em postbuild (scripts/inject-sw-version.mjs)
 // Para forçar atualização manual: basta fazer um novo deploy
 
-const BUILD_VERSION = 'mpn5mb0j'
+const BUILD_VERSION = 'mpn67tce'
 const CACHE_STATIC  = 'midiacar-static-'  + BUILD_VERSION
 const CACHE_DYNAMIC = 'midiacar-dynamic-' + BUILD_VERSION
 
@@ -116,7 +116,8 @@ self.addEventListener('fetch', function (event) {
       fetch(request)
         .then(function (response) {
           if (response.ok) {
-            caches.open(CACHE_DYNAMIC).then(function (c) { c.put(request, response.clone()) })
+            var toCache = response.clone()  // clona de forma síncrona, antes do return
+            caches.open(CACHE_DYNAMIC).then(function (c) { c.put(request, toCache) })
           }
           return response
         })

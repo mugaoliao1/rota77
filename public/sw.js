@@ -116,7 +116,8 @@ self.addEventListener('fetch', function (event) {
       fetch(request)
         .then(function (response) {
           if (response.ok) {
-            caches.open(CACHE_DYNAMIC).then(function (c) { c.put(request, response.clone()) })
+            var toCache = response.clone()  // clona de forma síncrona, antes do return
+            caches.open(CACHE_DYNAMIC).then(function (c) { c.put(request, toCache) })
           }
           return response
         })
