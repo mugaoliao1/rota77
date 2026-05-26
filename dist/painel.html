@@ -944,6 +944,9 @@ body {
       <div class="nav-item" onclick="navegar('templates',this)">
         <span class="nav-icon">🎨</span> Templates
       </div>
+      <div class="nav-item" onclick="navegar('escala',this)">
+        <span class="nav-icon">🌙</span> Escala
+      </div>
 
       <div class="nav-label">Sistema</div>
       <div class="nav-item" onclick="navegar('config',this)">
@@ -1337,6 +1340,64 @@ body {
         </div>
       </div>
 
+    </div>
+
+    <!-- ESCALA -->
+    <div class="page" id="page-escala">
+      <div class="page-header">
+        <div>
+          <div class="page-title">🌙 Escala da Madrugada</div>
+          <div class="page-sub">Gere a escala semanal dos motoristas — download automático em HTML</div>
+        </div>
+      </div>
+
+      <div style="max-width:520px;">
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Período</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;">Data início</label>
+              <input type="date" id="escala-data-inicio" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;outline:none;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;">Data fim</label>
+              <input type="date" id="escala-data-fim" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;outline:none;" />
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Vagas por turno — Dias normais (Seg–Qui / Dom)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;">🌃 00h às 02h</label>
+              <input type="number" id="escala-vagas-p1" value="2" min="1" max="20" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;outline:none;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;">🌙 02h às 06h</label>
+              <input type="number" id="escala-vagas-p2" value="1" min="1" max="20" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;outline:none;" />
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:24px;">
+          <div style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Vagas por turno — Reforço (Sex / Sáb)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;">🌃 00h às 02h</label>
+              <input type="number" id="escala-vagas-i1" value="4" min="1" max="20" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;outline:none;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;">🌙 02h às 06h</label>
+              <input type="number" id="escala-vagas-i2" value="2" min="1" max="20" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;outline:none;" />
+            </div>
+          </div>
+        </div>
+
+        <button onclick="gerarEscala()" style="width:100%;background:#1a2f5e;color:white;border:none;border-radius:10px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">
+          ⬇️ Gerar e Baixar Escala
+        </button>
+      </div>
     </div>
 
   </div><!-- /main -->
@@ -1745,6 +1806,7 @@ body {
 <script src="painel/js/config.js"></script>
 <script src="painel/js/csv.js"></script>
 <script src="painel/js/templates.js"></script>
+<script src="painel/js/escala.js"></script>
 <script src="painel/js/reset.js"></script>
 <script src="painel/js/auth.js"></script>
 <script src="painel/js/listeners.js"></script>
