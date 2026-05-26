@@ -1,0 +1,30 @@
+# Cloudflare Pages — cache headers para PWA correto
+
+# Service Worker: nunca cachear — o browser precisa buscar a versão mais recente
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Manifests: sem cache — podem mudar entre deploys
+/manifest-tablet.json
+  Cache-Control: no-cache
+/manifest-portal.json
+  Cache-Control: no-cache
+/manifest-painel.json
+  Cache-Control: no-cache
+
+# JS clássicos sem hash no nome — revalidar sempre para garantir versão atual após deploy
+# no-cache = obriga revalidação, mas permite servir 304 do edge se não mudou (performático)
+/shared/js/*
+  Cache-Control: no-cache
+/shared/js/vendor/*
+  Cache-Control: no-cache
+/tablet/js/*
+  Cache-Control: no-cache
+/portal/js/*
+  Cache-Control: no-cache
+/painel/js/*
+  Cache-Control: no-cache
+
+# Ícones: imutáveis — nunca mudam sem novo deploy (nome não muda, mas conteúdo não varia)
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable

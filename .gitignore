@@ -1,8 +1,8 @@
 # Dependências
 node_modules/
 
-# Build de produção — gerado pelo Vite (npm run build)
-dist/
+# Build de produção — commitado para deploy direto no Cloudflare Pages (sem build step)
+# dist/ NÃO está ignorado: executar "npm run build" antes de cada git push
 
 # Arquivos de rascunho/backup com nomes antigos
 midiacar_tablet*.html
