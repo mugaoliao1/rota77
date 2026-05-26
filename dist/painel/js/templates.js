@@ -170,10 +170,6 @@ async function criarAnuncioDoTemplate() {
     const tplFoto    = document.getElementById('tpl-foto').value || '';
     const tplCor     = corAtual || '#D7282B';
     const tplCorEsc  = tplCor + '22';
-    const sloganPartes = tplSlogan.includes(' ')
-      ? tplSlogan.split(' ').slice(0, Math.ceil(tplSlogan.split(' ').length/2)).join(' ')
-        + '<br><em>' + tplSlogan.split(' ').slice(Math.ceil(tplSlogan.split(' ').length/2)).join(' ') + '</em>'
-      : '<em>' + tplSlogan + '</em>';
 
     let tplFotoBase64 = '';
     if (tplFoto) {
@@ -186,36 +182,41 @@ async function criarAnuncioDoTemplate() {
           r.readAsDataURL(imgBlob);
         });
       } catch(e) {
-        console.warn('Não foi possível converter imagem para base64:', e);
         tplFotoBase64 = tplFoto;
       }
     }
+
     const bgStyle = tplFotoBase64
       ? `background-image:url('${tplFotoBase64}');background-size:cover;background-position:center;opacity:0.5;`
       : 'background:linear-gradient(135deg,#1a1a1a,#0a0a0a);';
 
+    const sloganPartes = tplSlogan.split(' ');
+    const meio = Math.ceil(sloganPartes.length / 2);
+    const sloganHtml = sloganPartes.slice(0, meio).join(' ')
+      + '<span style="color:' + tplCor + ';"> '
+      + sloganPartes.slice(meio).join(' ') + '</span>';
+
     const tplWrap = document.createElement('div');
     tplWrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:1920px;height:1080px;overflow:hidden;z-index:-1;font-family:Arial,sans-serif;background:#0a0a0a;';
     tplWrap.innerHTML = `
-      <div style="width:1920px;height:1080px;position:relative;display:flex;align-items:stretch;">
-        <div style="position:absolute;inset:0;${bgStyle}"></div>
-        <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.6) 55%,rgba(0,0,0,0.15) 100%);"></div>
-        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%);"></div>
-        <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(to bottom,transparent,${tplCor},transparent);"></div>
-        <div style="position:relative;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:80px 100px;max-width:900px;">
-          <div style="display:inline-flex;align-items:center;gap:10px;background:${tplCorEsc};border:1px solid ${tplCor}55;border-radius:30px;padding:10px 22px;margin-bottom:28px;font-size:36px;color:${tplCor};font-weight:700;text-transform:uppercase;letter-spacing:2px;width:fit-content;">● ${tplNome}</div>
-          <div style="font-size:90px;font-weight:900;line-height:1.0;margin-bottom:20px;color:white;text-shadow:0 4px 30px rgba(0,0,0,0.5);">${sloganPartes.replace('<em>','<span style="color:'+tplCor+';font-style:normal;">').replace('</em>','</span>')}</div>
-          ${tplDetalhe ? `<div style="background:${tplCorEsc};border-left:4px solid ${tplCor};padding:16px 22px;border-radius:0 10px 10px 0;margin-bottom:32px;font-size:36px;color:rgba(255,255,255,0.7);">${tplDetalhe}</div>` : ''}
-          <div style="display:inline-flex;align-items:center;gap:12px;background:${tplCor};color:#fff;padding:20px 40px;border-radius:14px;font-size:36px;font-weight:800;text-transform:uppercase;letter-spacing:1px;width:fit-content;">⚡ ${tplCta}</div>
-        </div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:60px;background:rgba(8,8,8,0.97);border-top:2px solid ${tplCor}66;display:flex;align-items:center;padding:0 60px;justify-content:space-between;">
-          <div style="font-size:40px;font-weight:900;color:white;">MÍDIA<span style="color:${tplCor};font-style:italic;">CAR</span></div>
-          <div style="font-size:28px;color:rgba(255,255,255,0.4);">Caçapava do Sul · veiculado por MídiaCar</div>
-        </div>
-      </div>`;
+  <div style="width:1920px;height:1080px;position:relative;display:flex;align-items:stretch;">
+    <div style="position:absolute;inset:0;${bgStyle}"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.6) 55%,rgba(0,0,0,0.15) 100%);"></div>
+    <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(to bottom,transparent,${tplCor},transparent);"></div>
+    <div style="position:relative;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:80px 100px;max-width:900px;">
+      <div style="display:inline-flex;align-items:center;gap:10px;background:${tplCorEsc};border:1px solid ${tplCor}55;border-radius:30px;padding:10px 22px;margin-bottom:28px;font-size:36px;color:${tplCor};font-weight:700;text-transform:uppercase;letter-spacing:2px;width:fit-content;">● ${tplNome}</div>
+      <div style="font-size:90px;font-weight:900;line-height:1.0;margin-bottom:20px;color:white;">${sloganHtml}</div>
+      ${tplDetalhe ? `<div style="background:${tplCorEsc};border-left:4px solid ${tplCor};padding:16px 22px;border-radius:0 10px 10px 0;margin-bottom:32px;font-size:36px;color:rgba(255,255,255,0.7);">${tplDetalhe}</div>` : ''}
+      <div style="display:inline-flex;align-items:center;gap:12px;background:${tplCor};color:#fff;padding:20px 40px;border-radius:14px;font-size:36px;font-weight:800;text-transform:uppercase;width:fit-content;">⚡ ${tplCta}</div>
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:60px;background:rgba(8,8,8,0.97);border-top:2px solid ${tplCor}66;display:flex;align-items:center;padding:0 60px;justify-content:space-between;">
+      <div style="font-size:40px;font-weight:900;color:white;">MÍDIA<span style="color:${tplCor};font-style:italic;">CAR</span></div>
+      <div style="font-size:28px;color:rgba(255,255,255,0.4);">Caçapava do Sul · veiculado por MídiaCar</div>
+    </div>
+  </div>`;
     document.body.appendChild(tplWrap);
 
-    await new Promise(res => setTimeout(res, 200));
+    await new Promise(res => setTimeout(res, 300));
 
     bar.style.width = '55%'; pct.textContent = '55%';
     status.textContent = 'Capturando imagem...';
@@ -223,8 +224,7 @@ async function criarAnuncioDoTemplate() {
     const canvas = await html2canvas(tplWrap, {
       width: 1920, height: 1080,
       useCORS: true, allowTaint: true,
-      backgroundColor: '#0a0a0a',
-      scale: 1
+      backgroundColor: '#0a0a0a', scale: 1
     });
 
     document.body.removeChild(tplWrap);
