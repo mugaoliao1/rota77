@@ -16,12 +16,15 @@ function processarCSV(file) {
     try {
       const texto = e.target.result;
       const resultado = parsearCSV(texto);
-      const { metricas, motoristas, metricasPorMotorista } = resultado;
+      const { metricas, motoristas, metricasPorMotorista, todasCorridas } = resultado;
       if (!metricas || Object.keys(metricas).length === 0) {
         mostrarToast('⚠️ Nenhuma corrida finalizada encontrada no arquivo','erro');
         return;
       }
-      dadosImportados = { metricas, motoristas, metricasPorMotorista, arquivo: file.name, timestamp: new Date().toISOString() };
+      dadosImportados = {
+        metricas, motoristas, metricasPorMotorista, todasCorridas,
+        arquivo: file.name, timestamp: new Date().toISOString()
+      };
       mostrarPreview(metricas, motoristas);
       mostrarToast('✅ Arquivo lido com sucesso! Confira e salve.','sucesso');
     } catch(err) {
@@ -39,44 +42,56 @@ function parsearCSV(texto) {
   const sep = linhas[0].includes(';') ? ';' : ',';
   const headers = linhas[0].split(sep).map(h => h.trim().replace(/"/g,''));
 
-  const idxStatus    = headers.findIndex(h => h.toLowerCase().includes('status'));
-  const idxMomento   = headers.findIndex(h => h.toLowerCase().includes('momento da solicita'));
-  const idxDistancia = headers.findIndex(h => h.toLowerCase().includes('distância do início') || h.toLowerCase().includes('distancia do inicio'));
-  const idxTempo     = headers.findIndex(h => h.toLowerCase().includes('tempo do início') || h.toLowerCase().includes('tempo do inicio'));
-  const idxMotorista = headers.findIndex(h => h.toLowerCase() === 'motorista');
+  const idxStatus     = headers.findIndex(h => h.toLowerCase().includes('status'));
+  const idxMomento    = headers.findIndex(h => h.toLowerCase().includes('momento da solicita'));
+  const idxDistancia  = headers.findIndex(h => h.toLowerCase().includes('distância do início') || h.toLowerCase().includes('distancia do inicio'));
+  const idxTempo      = headers.findIndex(h => h.toLowerCase().includes('tempo do início') || h.toLowerCase().includes('tempo do inicio'));
+  const idxMotorista  = headers.findIndex(h => h.toLowerCase() === 'motorista');
+  const idxPassageiro = headers.findIndex(h => /passageiro|usu[aá]rio|cliente/.test(h.toLowerCase()));
+  const idxMotivo     = headers.findIndex(h => h.toLowerCase().includes('motivo'));
 
-  console.log('Colunas detectadas:', {idxStatus, idxMomento, idxDistancia, idxTempo, idxMotorista});
+  console.log('Colunas detectadas:', {idxStatus,idxMomento,idxDistancia,idxTempo,idxMotorista,idxPassageiro,idxMotivo});
 
   const metricas = {};
   const motoristas = {};
   const metricasPorMotorista = {};
+  const todasCorridas = [];
 
   for (let i = 1; i < linhas.length; i++) {
     const linha = linhas[i].trim();
     if (!linha) continue;
     const cols = linha.split(sep);
 
-    const status = (cols[idxStatus]||'').trim().toLowerCase();
-    if (status !== 'finalizada') continue;
+    const statusRaw  = (cols[idxStatus]||'').trim().replace(/"/g,'');
+    const statusNorm = statusRaw.toLowerCase();
 
-    const momentoRaw = (cols[idxMomento]||'').trim().replace(/"/g,'');
+    const momentoRaw = idxMomento >= 0 ? (cols[idxMomento]||'').trim().replace(/"/g,'') : '';
     if (!momentoRaw) continue;
 
-    const partes = momentoRaw.split(' ')[0].split('/');
+    const partesMomento = momentoRaw.split(' ');
+    const partes = partesMomento[0].split('/');
     if (partes.length < 3) continue;
     const data = `${partes[2]}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}`;
 
+    const hora = parseInt((partesMomento[1] || '0').split(':')[0]) || 0;
+    const tsStr = `${partes[2]}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}T${partesMomento[1] || '00:00:00'}`;
+    const momentoMs = new Date(tsStr).getTime();
+
     let km = 0;
-    if (idxDistancia >= 0) {
-      km = parseFloat((cols[idxDistancia]||'0').replace(',','.').trim()) || 0;
-    }
+    if (idxDistancia >= 0) km = parseFloat((cols[idxDistancia]||'0').replace(',','.').trim()) || 0;
 
     let tempo = 0;
-    if (idxTempo >= 0) {
-      tempo = parseFloat((cols[idxTempo]||'0').replace(',','.').trim()) || 0;
-    }
+    if (idxTempo >= 0) tempo = parseFloat((cols[idxTempo]||'0').replace(',','.').trim()) || 0;
 
-    const nomeMotorista = idxMotorista >= 0 ? (cols[idxMotorista]||'').trim().replace(/"/g,'') : '';
+    const nomeMotorista = idxMotorista  >= 0 ? (cols[idxMotorista] ||'').trim().replace(/"/g,'') : '';
+    const passageiro    = idxPassageiro >= 0 ? (cols[idxPassageiro]||'').trim().replace(/"/g,'') : '';
+    const motivo        = idxMotivo     >= 0 ? (cols[idxMotivo]    ||'').trim().replace(/"/g,'') : '';
+
+    // Coleta todas as corridas (todos os status) para o boletim
+    todasCorridas.push({ statusRaw, statusNorm, data, hora, momentoMs, nomeMotorista, passageiro, motivo, km, tempo });
+
+    // ── Processamento existente (apenas finalizadas) ──────────
+    if (statusNorm !== 'finalizada') continue;
 
     if (!metricas[data]) metricas[data] = { corridas:0, km:0, tempo_min:0 };
     metricas[data].corridas++;
@@ -95,24 +110,21 @@ function parsearCSV(texto) {
     }
   }
 
-  Object.keys(metricas).forEach(data => {
-    metricas[data].km = Math.round(metricas[data].km * 10) / 10;
-    metricas[data].tempo_min = Math.round(metricas[data].tempo_min);
+  Object.keys(metricas).forEach(d => {
+    metricas[d].km = Math.round(metricas[d].km * 10) / 10;
+    metricas[d].tempo_min = Math.round(metricas[d].tempo_min);
   });
   Object.keys(motoristas).forEach(nome => {
     motoristas[nome].km = Math.round(motoristas[nome].km * 10) / 10;
   });
 
-  return { metricas, motoristas, metricasPorMotorista };
+  return { metricas, motoristas, metricasPorMotorista, todasCorridas };
 }
 
 function mostrarPreview(metricas, motoristas) {
   const datas = Object.keys(metricas).sort();
   let totalCorridas=0, totalKm=0;
-  datas.forEach(d => {
-    totalCorridas += metricas[d].corridas;
-    totalKm       += metricas[d].km;
-  });
+  datas.forEach(d => { totalCorridas += metricas[d].corridas; totalKm += metricas[d].km; });
   const totalMotoristas = Object.keys(motoristas||{}).length;
 
   document.getElementById('preview-kpis').innerHTML = `
@@ -177,8 +189,8 @@ async function salvarMetricas() {
     await db.ref().update(updates);
 
     const datas = Object.keys(metricas).sort();
-    const totalCorridas = Object.values(metricas).reduce((a,m)=>a+m.corridas,0);
-    const totalKm       = Object.values(metricas).reduce((a,m)=>a+m.km,0);
+    const totalCorridas   = Object.values(metricas).reduce((a,m)=>a+m.corridas,0);
+    const totalKm         = Object.values(metricas).reduce((a,m)=>a+m.km,0);
     const totalMotoristas = Object.keys(motoristas||{}).length;
 
     await db.ref('rotaads/importacoes').push({
@@ -190,8 +202,7 @@ async function salvarMetricas() {
       status: 'ok'
     });
 
-    dadosImportados = null;
-    document.getElementById('card-preview').style.display = 'none';
+    // Mantém dadosImportados para permitir gerar boletim após salvar
     document.getElementById('csv-input').value = '';
     mostrarToast(`✅ ${Object.keys(metricas).length} dias e ${totalMotoristas} motoristas salvos!`, 'sucesso');
     carregarHistoricoImportacoes();
