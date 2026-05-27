@@ -1394,9 +1394,23 @@ body {
           </div>
         </div>
 
-        <button onclick="gerarEscala()" style="width:100%;background:#1a2f5e;color:white;border:none;border-radius:10px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">
-          ⬇️ Gerar e Baixar Escala
-        </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <button onclick="gerarEscala()" style="background:#1a2f5e;color:white;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
+            ⬇️ Baixar HTML
+          </button>
+          <button id="btn-publicar-escala" onclick="publicarEscala()" style="background:#F5A800;color:#1a2f5e;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
+            🚀 Publicar Escala
+          </button>
+        </div>
+
+        <div style="margin-top:20px;background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <div style="font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Token GitHub (para publicar)</div>
+          <div style="font-size:11px;color:#aaa;margin-bottom:12px;">Crie em github.com → Settings → Developer settings → Personal access tokens → Fine-grained → permissão <strong>Contents: Read and write</strong></div>
+          <div style="display:flex;gap:8px;">
+            <input type="password" id="escala-github-token" placeholder="github_pat_..." style="flex:1;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;outline:none;" />
+            <button onclick="salvarTokenGithub()" style="background:#1a2f5e;color:white;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Salvar</button>
+          </div>
+        </div>
       </div>
     </div>
 

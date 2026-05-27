@@ -18,6 +18,7 @@ function navegar(pagina, el) {
   if(pagina==='config') renderConfigPlanos();
   if(pagina==='importar') carregarHistoricoImportacoes();
   if(pagina==='templates') setTimeout(iniciarTemplates, 100);
+  if(pagina==='escala') carregarConfigEscala();
   fecharSidebar();
 }
 

@@ -1,5 +1,10 @@
 // ── Gerador de Escala da Madrugada ────────────────────────────
-function gerarEscala() {
+
+const _GITHUB_OWNER = 'mugaoliao1';
+const _GITHUB_REPO  = 'rota77';
+const _GITHUB_PATH  = 'dist/escala-atual.html';
+
+function _lerFormEscala() {
   var dataInicioVal = document.getElementById('escala-data-inicio').value;
   var dataFimVal    = document.getElementById('escala-data-fim').value;
   var vagP1 = parseInt(document.getElementById('escala-vagas-p1').value) || 2;
@@ -9,11 +14,11 @@ function gerarEscala() {
 
   if (!dataInicioVal || !dataFimVal) {
     mostrarToast('Preencha as datas de início e fim.', 'erro');
-    return;
+    return null;
   }
   var inicio = new Date(dataInicioVal + 'T00:00:00');
   var fim    = new Date(dataFimVal    + 'T00:00:00');
-  if (fim < inicio) { mostrarToast('Data fim deve ser ≥ data início.', 'erro'); return; }
+  if (fim < inicio) { mostrarToast('Data fim deve ser ≥ data início.', 'erro'); return null; }
 
   var MESES    = ['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   var DIA_NOME  = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
@@ -36,11 +41,8 @@ function gerarEscala() {
     var dd     = String(cur.getDate()).padStart(2,'0');
     var mm     = String(cur.getMonth() + 1).padStart(2,'0');
     escala.push({
-      id:    uid,
-      nome:  DIA_NOME[dow],
-      sigla: DIA_SIGLA[dow],
-      data:  dd + '/' + mm,
-      tipo:  tipo,
+      id: uid, nome: DIA_NOME[dow], sigla: DIA_SIGLA[dow],
+      data: dd + '/' + mm, tipo: tipo,
       turnos: [
         { id: uid + '_00', titulo: '00h às 02h', icon: '🌃', vagas: tipo === 'intenso' ? vagI1 : vagP1 },
         { id: uid + '_02', titulo: '02h às 06h', icon: '🌙', vagas: tipo === 'intenso' ? vagI2 : vagP2 }
@@ -58,11 +60,19 @@ function gerarEscala() {
   var p1 = primeiroDia.data.split('/'), p2 = ultimoDia.data.split('/');
   var fileName = 'escala_' + p1[0] + '_' + p1[1] + '_a_' + p2[0] + '_' + p2[1] + '.html';
 
-  var html = _construirHtmlEscala(semanaKey, escala, badgeText);
-  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  return { semanaKey: semanaKey, escala: escala, badgeText: badgeText, fileName: fileName,
+           html: _construirHtmlEscala(semanaKey, escala, badgeText) };
+}
+
+// ── Download local ─────────────────────────────────────────────
+function gerarEscala() {
+  var r = _lerFormEscala();
+  if (!r) return;
+
+  var blob = new Blob([r.html], { type: 'text/html;charset=utf-8' });
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
-  a.href = url; a.download = fileName;
+  a.href = url; a.download = r.fileName;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -70,6 +80,78 @@ function gerarEscala() {
   mostrarToast('✅ Escala gerada com sucesso!', 'sucesso');
 }
 
+// ── Publicar via GitHub API ────────────────────────────────────
+async function publicarEscala() {
+  var r = _lerFormEscala();
+  if (!r) return;
+
+  var btn = document.getElementById('btn-publicar-escala');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Publicando...'; }
+
+  try {
+    var snap = await db.ref('rotaads/config/githubToken').once('value');
+    var token = snap.val();
+    if (!token) {
+      mostrarToast('❌ Token GitHub não configurado. Salve-o abaixo.', 'erro');
+      return;
+    }
+
+    var API = 'https://api.github.com/repos/' + _GITHUB_OWNER + '/' + _GITHUB_REPO +
+              '/contents/' + _GITHUB_PATH;
+
+    var bytes = new TextEncoder().encode(r.html);
+    var binary = '';
+    bytes.forEach(function(b) { binary += String.fromCharCode(b); });
+    var content = btoa(binary);
+
+    var headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+
+    var sha;
+    var existing = await fetch(API, { headers: headers });
+    if (existing.ok) { sha = (await existing.json()).sha; }
+
+    var body = { message: 'escala: ' + r.badgeText.replace('📅 ', ''), content: content };
+    if (sha) body.sha = sha;
+
+    var res = await fetch(API, {
+      method: 'PUT',
+      headers: Object.assign({}, headers, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      var err = await res.json();
+      throw new Error(err.message || res.statusText);
+    }
+
+    mostrarToast('✅ Publicado! Deploy em ~1 min', 'sucesso');
+  } catch (e) {
+    console.error('[escala/publicar]', e);
+    mostrarToast('❌ ' + e.message, 'erro');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🚀 Publicar Escala'; }
+  }
+}
+
+// ── Token GitHub ───────────────────────────────────────────────
+function carregarConfigEscala() {
+  db.ref('rotaads/config/githubToken').once('value', function(snap) {
+    var el = document.getElementById('escala-github-token');
+    if (el) el.value = snap.val() || '';
+  });
+}
+
+async function salvarTokenGithub() {
+  var token = document.getElementById('escala-github-token').value.trim();
+  try {
+    await db.ref('rotaads/config/githubToken').set(token || null);
+    mostrarToast('✅ Token salvo!', 'sucesso');
+  } catch (e) {
+    mostrarToast('❌ Erro ao salvar token', 'erro');
+  }
+}
+
+// ── Gerador de HTML ────────────────────────────────────────────
 function _construirHtmlEscala(semanaKey, escala, badgeText) {
   var escalaJson = JSON.stringify(escala, null, 2);
 
@@ -259,7 +341,6 @@ function _construirHtmlEscala(semanaKey, escala, badgeText) {
     background:var(--cinza);
   }
   .dia-header.intenso { background:#fff8e6; }
-  .dia-header.hoje { background:#e8f0fd; }
   .dia-info { display:flex; align-items:center; gap:12px; }
   .dia-circulo {
     width:42px; height:42px;
@@ -273,7 +354,6 @@ function _construirHtmlEscala(semanaKey, escala, badgeText) {
     flex-shrink:0;
   }
   .dia-circulo.intenso { background:var(--amarelo); color:var(--azul); }
-  .dia-circulo.hoje { background:#3b5fc0; color:white; }
   .dia-circulo.padrao-seg { background:#2980b9; color:white; }
   .dia-circulo-nome {
     font-family:'Barlow Condensed', sans-serif;
@@ -309,7 +389,6 @@ function _construirHtmlEscala(semanaKey, escala, badgeText) {
     color:white;
   }
   .dia-tag.intenso { background:var(--amarelo); color:var(--azul); }
-  .dia-tag.hoje { background:#3b5fc0; color:white; }
   .turnos { padding:12px 24px 18px; }
   .turno {
     background:white;
@@ -704,4 +783,6 @@ function _construirHtmlEscala(semanaKey, escala, badgeText) {
     '</body>\n</html>';
 }
 
-window.gerarEscala = gerarEscala;
+window.gerarEscala      = gerarEscala;
+window.publicarEscala   = publicarEscala;
+window.salvarTokenGithub = salvarTokenGithub;
