@@ -282,7 +282,7 @@ function _construirHtmlBoletim(dados) {
   if (dados.temPassageiro) {
     rechamadasHtml = dados.rechamadas > 0
       ? '<div class="info-box"><strong>' + dados.rechamadas + ' passageiro' + (dados.rechamadas > 1 ? 's' : '') +
-        '</strong> rechamou' + (dados.rechamadas > 1 ? 'aram' : '') + ' em até 2h e finalizou' + (dados.rechamadas > 1 ? 'aram' : '') + '.</div>'
+        '</strong> ' + (dados.rechamadas > 1 ? 'rechamaram' : 'rechamou') + ' em até 2h e ' + (dados.rechamadas > 1 ? 'finalizaram' : 'finalizou') + '.</div>'
       : '<div class="info-box">Nenhum passageiro rechamou em até 2h.</div>';
   }
 
@@ -547,7 +547,6 @@ function _construirHtmlBoletim(dados) {
     '    <div class="taxa-box verde">\n' +
     '      <div class="taxa-label">Taxa de finalização</div>\n' +
     '      <div class="taxa-valor verde">' + _fmtPct(dados.taxaFinalizacao) + '</div>\n' +
-    '      <div class="taxa-sub">' + dados.finalizadas.toLocaleString('pt-BR') + ' corridas</div>\n' +
     '    </div>\n' +
     '    <div class="taxa-box verde">\n' +
     '      <div class="taxa-label">Cancel. real (2h)</div>\n' +
