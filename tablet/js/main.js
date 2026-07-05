@@ -7,6 +7,8 @@ function iniciar() {
   localStorage.removeItem('rotaads_noticias_cache');
   localStorage.removeItem('rotaads_noticias_ts');
   if (!tabletId) { telaLoading.style.display = 'none'; abrirConfig(); return; }
+  if (typeof _sessaoIniciar === 'function') _sessaoIniciar();
+  if (typeof _heartbeatTick === 'function') _heartbeatTick();
   carregarAnuncios();
 }
 

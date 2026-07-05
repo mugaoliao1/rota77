@@ -21,6 +21,7 @@ const PRECACHE = [
   '/shared/js/logger.js',
   '/shared/js/updater.js',
   // tablet
+  '/tablet/js/heartbeat.js',
   '/tablet/js/state.js',
   '/tablet/js/helpers.js',
   '/tablet/js/ui.js',

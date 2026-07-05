@@ -1,6 +1,7 @@
 // ── Player de anúncios, Momento MídiaCar, realtime listeners ─
 
 let contadorAnuncios = 0;
+let _exibicaoVideoConcluiu = false; // true só quando o <video> disparou onended de verdade (T8)
 
 const DADOS_URBANOS = [
   { icone:'📍', texto:'Sua marca circulando por Caçapava do Sul' },
@@ -21,10 +22,16 @@ function iniciarExibicao() {
 }
 
 function exibirAnuncio() {
+  // Fecha qualquer exibição ainda aberta antes de abrir a próxima — cobre
+  // todo caminho que chega aqui sem passar por proximoAnuncio() (swipe,
+  // anuncioAnterior(), retomada de visibilidade). No-op se já não há
+  // nada aberto (_exibicaoConcluir já garante isso desde a T8).
+  if (typeof _exibicaoConcluir === 'function') _exibicaoConcluir('interrompido', { eventoNativoConcluido: false });
   if (!anunciosAtivos.length) { mostrarOffline(); return; }
   if (indiceAtual >= anunciosAtivos.length) indiceAtual = 0;
   const anuncio = anunciosAtivos[indiceAtual];
   const duracao = (anuncio.duracao || 15) * 1000;
+  if (typeof _exibicaoIniciar === 'function' && !anuncio._clima && !anuncio._noticia) _exibicaoIniciar(anuncio, duracao);
   barraAnunciante.textContent = (anuncio._clima || anuncio._noticia) ? '' : (anuncio.nomeAnunciante || '');
   atualizarProgresso(); atualizarPontinhos();
   // Fade out suave antes de trocar
@@ -57,7 +64,11 @@ function exibirAnuncio() {
       anuncioVideo.classList.add('ativo', 'fade');
       document.getElementById('tela-anuncios').classList.remove('vinheta-ativa');
       anuncioVideo.play().catch(() => {});
-      anuncioVideo.onended = proximoAnuncio;
+      anuncioVideo.onended = () => { _exibicaoVideoConcluiu = true; proximoAnuncio(); };
+      anuncioVideo.onerror = () => {
+        if (typeof _exibicaoConcluir === 'function') _exibicaoConcluir('erro_playback', { eventoNativoConcluido: false });
+        proximoAnuncio();
+      };
       timerExibicao = setTimeout(proximoAnuncio, duracao + 5000);
     } else {
       anuncioImg.src = anuncio.url;
@@ -75,9 +86,20 @@ function exibirAnuncio() {
 function proximoAnuncio() {
   clearTimeout(timerExibicao);
   // Aplica atualização pendente do SW no momento mais seguro (entre anúncios)
-  if (typeof _pendingSwUpdate !== 'undefined' && _pendingSwUpdate) { window.location.reload(); return; }
+  if (typeof _pendingSwUpdate !== 'undefined' && _pendingSwUpdate) {
+    // Fecha a exibição atual antes de recarregar — _heartbeatEscrever grava no
+    // outbox (localStorage) de forma síncrona, então sobrevive ao reload mesmo
+    // que a escrita assíncrona no Firebase seja interrompida por ele.
+    if (typeof _exibicaoConcluir === 'function') _exibicaoConcluir('completo', { eventoNativoConcluido: _exibicaoVideoConcluiu });
+    window.location.reload();
+    return;
+  }
   const anuncioAtual  = anunciosAtivos[indiceAtual];
   const ehAnuncioReal = !anuncioAtual?._clima && !anuncioAtual?._noticia;
+  if (typeof _exibicaoConcluir === 'function' && ehAnuncioReal) {
+    _exibicaoConcluir('completo', { eventoNativoConcluido: _exibicaoVideoConcluiu });
+  }
+  _exibicaoVideoConcluiu = false;
   indiceAtual = (indiceAtual + 1) % anunciosAtivos.length;
   if (ehAnuncioReal) contadorAnuncios++;
   if (contadorAnuncios >= 3) {
@@ -161,6 +183,7 @@ function carregarAnuncios() {
   fbOn(db.ref('.info/connected'), 'value', snap => {
     online = snap.val() === true;
     atualizarStatusDot(online);
+    if (typeof _outboxFlush === 'function' && online) _outboxFlush();
   });
 
   // R4: substitui .once() chamado a cada Momento — 1 listener persistente em vez de ~1920 calls/24h

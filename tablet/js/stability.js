@@ -41,6 +41,8 @@ function _pausarPlayer() {
 
   // Para o relógio do slot clima
   pararRelogioClima()
+
+  if (typeof _heartbeatStatus === 'function') _heartbeatStatus('pausado_visibilidade')
 }
 
 // ── Retomar exibição ──────────────────────────────────────────
@@ -66,6 +68,8 @@ function _retomarPlayer() {
   if (anunciosAtivos.length > 0 && telaAnuncios.style.display !== 'none') {
     exibirAnuncio()
   }
+
+  if (typeof _heartbeatStatus === 'function') _heartbeatStatus('exibindo')
 }
 
 // ── Page Visibility API ───────────────────────────────────────
