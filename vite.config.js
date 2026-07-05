@@ -11,6 +11,7 @@ function copyClassicScripts() {
       await cp('tablet/js', 'dist/tablet/js', { recursive: true })
       await cp('portal/js', 'dist/portal/js', { recursive: true })
       await cp('painel/js', 'dist/painel/js', { recursive: true })
+      await cp('anunciante/js', 'dist/anunciante/js', { recursive: true })
     }
   }
 }
@@ -24,13 +25,21 @@ export default defineConfig({
 
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    // false (temporário): o build é ADITIVO — não esvazia dist/. Enquanto
+    // ainda existirem artefatos em dist que ainda não são totalmente
+    // reproduzidos pelo fonte (como remanescentes do motor legado e os
+    // espelhos de rota77/documentos), emptyOutDir:true os removeria antes
+    // da limpeza planejada (Passo 5). Após essa limpeza, emptyOutDir deve
+    // voltar para true.
+    // Custo: assets hasheados antigos podem acumular em dist/assets (limpeza manual).
+    emptyOutDir: false,
 
     rollupOptions: {
       input: {
         tablet: 'tablet.html',
         portal: 'portal.html',
         painel: 'painel.html',
+        anunciante: 'anunciante.html',
       },
     },
 
