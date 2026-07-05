@@ -1,0 +1,149 @@
+{
+  // ── Regras de segurança — Firebase Realtime Database ──────────────
+  // Versão base (P3) + correções da auditoria completa do Firebase.
+  // AINDA NÃO PUBLICADAS — deploy manual documentado; pré-requisitos
+  // obrigatórios antes do deploy listados na auditoria (cap. 7):
+  // exportar regras vigentes, rotacionar githubToken, criar
+  // rotaads/usuarios/{uid} para TODOS os usuários do Firebase Auth
+  // (gestores do painel MídiaCar E operadores do rota77 standalone).
+  //
+  // Princípios desta versão:
+  //  1. Negação por padrão na raiz; todo acesso é concedido nó a nó.
+  //  2. Papéis em rotaads/usuarios/{uid}: { papel, anuncianteId?, ativo }.
+  //     Criados SOMENTE pelo console (nenhum client escreve).
+  //     Os operadores do painel rota77 standalone (dist/rota77.html)
+  //     usam papel "gestor" — são o mesmo perfil de acesso.
+  //  3. Telemetria (heartbeats/sessoes/exibicoes): escrita aberta —
+  //     o tablet NÃO se autentica (dívida documentada na Metodologia
+  //     §14 e no plano mestre; fecha quando o tablet ganhar identidade).
+  //  4. Leituras públicas mantidas onde o tablet (sem auth) e o portal
+  //     legado dependem delas — remoção planejada junto com a
+  //     aposentadoria do portal legado.
+  //  5. escalas/ (fora de rotaads): leitura e escrita PÚBLICAS de
+  //     propósito — a escala self-service dos motoristas é uma página
+  //     pública (escala-atual.html, publicada no repo rota77) onde o
+  //     motorista grava o próprio nome SEM autenticação. Dívida
+  //     registrada na auditoria (risco nº 8); fecha quando a escala
+  //     migrar para o app do motorista.
+  //
+  // Funções de apoio (inline, RTDB não tem funções nomeadas):
+  //  _ehUsuarioAtivo  = root.child('rotaads/usuarios/'+auth.uid+'/ativo').val() === true
+  //  _ehGestor        = ...papel === 'gestor' && ativo === true
+
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "rotaads": {
+
+      // ── Papéis ────────────────────────────────────────────────────
+      "usuarios": {
+        "$uid": {
+          // cada usuário lê apenas o próprio registro
+          ".read": "auth != null && auth.uid === $uid",
+          // ninguém escreve pelo client — provisionamento só pelo console
+          ".write": false
+        }
+      },
+
+      // ── Telemetria (tablet escreve sem auth — dívida conhecida) ──
+      "heartbeats": {
+        ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".write": true
+      },
+      "sessoes": {
+        ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".write": true
+      },
+      "exibicoes": {
+        ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".write": true
+      },
+
+      // ── Config da operação — só gestor ───────────────────────────
+      // Usada pelo painel MídiaCar E pelo rota77 standalone (boletim/
+      // escala) — operadores dos dois precisam de usuarios/{uid} gestor.
+      "config": {
+        ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+
+        // githubToken: regra própria, redundante com a do pai DE
+        // PROPÓSITO (defesa em profundidade) — se um dia a regra de
+        // config for afrouxada, o token continua gestor-only.
+        // O PAT dá escrita no repo público rota77; a auditoria manda
+        // rotacioná-lo antes do deploy (esteve legível publicamente).
+        "githubToken": {
+          ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+          ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+        }
+      },
+
+      // ── Cadastro: leitura pública (tablet e portal legado sem auth
+      //    dependem dela), escrita só gestor ────────────────────────
+      "tablets": {
+        ".read": true,
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".indexOn": ["nome"]
+      },
+      "anuncios": {
+        ".read": true,
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+      },
+      "anunciantes": {
+        ".read": true,
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+      },
+      "campanhas": {
+        ".read": true,
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+      },
+      // editoriais: auditoria confirmou que SÓ o painel lê — leitura
+      // pública era exposição sem consumidor; agora gestor-only.
+      "editoriais": {
+        ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+      },
+      "motoristas": {
+        ".read": true,
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+      },
+
+      // ── Métricas de operação (portal legado lê sem auth) ─────────
+      "metricas": {
+        ".read": true,
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+      },
+      "metricasMotoristas": {
+        ".read": true,
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+      },
+      // importacoes: lida só por painel e rota77 standalone (ambos
+      // gestores) — leitura pública era desnecessária. indexOn exigido
+      // pela query orderByChild('timestamp') dos dois apps.
+      "importacoes": {
+        ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+        ".indexOn": ["timestamp"]
+      },
+
+      // ── Scans de QR: gravados por página pública de redirecionamento
+      //    (sem auth, repo externo rota77) e lidos pelo portal legado ─
+      "scans": {
+        ".read": true,
+        ".write": true
+      }
+    },
+
+    // ── Escala pública dos motoristas — FORA de rotaads ─────────────
+    // Correção da auditoria (achado nº 1): sem este nó, o default-deny
+    // da raiz quebraria a escala-atual.html (página pública onde
+    // motoristas gravam o próprio nome nas vagas, sem autenticação).
+    // Leitura e escrita públicas são TEMPORÁRIAS e deliberadas —
+    // risco nº 8 da auditoria; fecha quando a escala migrar para o
+    // app do motorista com identidade própria.
+    "escalas": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
