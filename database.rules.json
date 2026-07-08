@@ -134,6 +134,18 @@
       }
     },
 
+    // ── Namespace de TESTE do contrato consolidado ──────────────────
+    // Destino: rotaads_test/consolidado/v1/dias/{YYYY-MM-DD} — espelho
+    // exato da forma de produção (rotaads/consolidado/...), trocando só
+    // o prefixo de raiz. Gestor-only para leitura E escrita: dados de
+    // teste não são consumidos por tablet, portal nem anunciante.
+    // TEMPORÁRIO — remover este nó ao fim da Fase A da escrita
+    // controlada (validação de idempotência do contrato consolidado).
+    "rotaads_test": {
+      ".read": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true",
+      ".write": "auth != null && root.child('rotaads/usuarios').child(auth.uid).child('papel').val() === 'gestor' && root.child('rotaads/usuarios').child(auth.uid).child('ativo').val() === true"
+    },
+
     // ── Escala pública dos motoristas — FORA de rotaads ─────────────
     // Correção da auditoria (achado nº 1): sem este nó, o default-deny
     // da raiz quebraria a escala-atual.html (página pública onde
