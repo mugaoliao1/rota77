@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rota 77 — Seu guia de corridas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --red:#D42B2B; --red-dark:#9e1f1f; --black:#0e0e0e; --panel:#161616;
+    --panel2:#1e1e1e; --line:#2a2a2a; --ink:#f4f4f4; --ink2:#a9a9a9; --gold:#FFC94D;
+    --green:#3fae6b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--black);color:var(--ink);font-family:'DM Sans',sans-serif;
+    line-height:1.55;overflow-x:hidden;}
+  .wrap{max-width:460px;margin:0 auto;padding:0 20px 48px;}
+  .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--red);
+    font-weight:700;}
+  h1,h2,.big{font-family:'Bebas Neue',sans-serif;font-weight:400;line-height:.98;
+    letter-spacing:.01em;}
+  header{padding:40px 20px 28px;max-width:460px;margin:0 auto;}
+  .logo{display:inline-flex;align-items:center;gap:9px;margin-bottom:34px;}
+  .logo .mark{width:34px;height:34px;border-radius:9px;background:var(--red);
+    display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';
+    font-size:20px;color:#fff;padding-top:2px;}
+  .logo b{font-family:'Bebas Neue';font-size:22px;letter-spacing:.04em;font-weight:400;}
+  header h1{font-size:54px;margin:14px 0 0;}
+  header h1 .hl{color:var(--red);}
+  header p.sub{color:var(--ink2);font-size:16px;margin-top:16px;max-width:350px;}
+  section{margin-top:44px;}
+  .sec-head{margin-bottom:18px;}
+  .sec-head h2{font-size:34px;margin-top:8px;}
+  .sec-head p{color:var(--ink2);font-size:14.5px;margin-top:8px;}
+  .stat-row{display:flex;gap:12px;margin-bottom:20px;}
+  .stat{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px 14px;}
+  .stat .n{font-family:'Bebas Neue';font-size:40px;color:var(--red);line-height:.9;}
+  .stat .l{font-size:12px;color:var(--ink2);margin-top:6px;letter-spacing:.02em;}
+  .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:18px 14px 12px;}
+  .chart-box{position:relative;width:100%;height:210px;}
+  .chart-box-tall{position:relative;width:100%;height:260px;}
+  .note{font-size:13px;color:var(--green);margin-top:14px;display:flex;gap:8px;
+    align-items:flex-start;line-height:1.5;}
+  .note b{color:var(--ink);font-weight:700;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:2px 4px 16px;font-size:12.5px;
+    color:var(--ink2);}
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .gold-band{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);
+    border-radius:20px;padding:26px 22px;margin-top:16px;position:relative;overflow:hidden;}
+  .gold-band::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;
+    background:rgba(255,255,255,.07);border-radius:50%;}
+  .gold-band .kicker{font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--gold);font-weight:700;}
+  .gold-band h2{font-size:30px;color:#fff;margin-top:6px;}
+  .gold-band .lead{color:rgba(255,255,255,.9);font-size:14px;margin-top:8px;}
+  .slots{margin-top:20px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;}
+  .slot{display:flex;align-items:center;gap:14px;background:rgba(0,0,0,.22);
+    border-radius:12px;padding:13px 16px;}
+  .slot .time{font-family:'Bebas Neue';font-size:26px;color:#fff;min-width:118px;line-height:1;}
+  .slot .desc{font-size:13.5px;color:rgba(255,255,255,.85);}
+  .split{display:flex;flex-direction:column;gap:11px;}
+  .srow{display:flex;align-items:center;gap:14px;}
+  .srow .sn{font-size:14px;color:var(--ink);min-width:132px;font-weight:500;}
+  .srow .track{flex:1;height:14px;background:var(--panel2);border-radius:8px;overflow:hidden;}
+  .srow .fillb{height:100%;background:var(--red);border-radius:8px;}
+  .srow .pc{font-family:'Bebas Neue';font-size:20px;color:var(--ink2);min-width:42px;text-align:right;}
+  .days{display:flex;gap:7px;align-items:flex-end;height:150px;margin-top:6px;}
+  .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;
+    justify-content:flex-end;}
+  .day .bar{width:100%;border-radius:6px 6px 0 0;background:var(--panel2);}
+  .day.hot .bar{background:var(--red);}
+  .day.top .bar{background:var(--gold);}
+  .day .dl{font-size:12px;color:var(--ink2);font-weight:500;}
+  .day.top .dl,.day.hot .dl{color:var(--ink);}
+  .tips{display:flex;flex-direction:column;gap:10px;}
+  .tip{display:flex;gap:13px;background:var(--panel);border:1px solid var(--line);
+    border-radius:13px;padding:15px 16px;align-items:flex-start;}
+  .tip .ic{font-size:20px;line-height:1.2;}
+  .tip .tx{font-size:14px;color:var(--ink);}
+  .tip .tx b{color:var(--red);}
+  .closer{margin-top:44px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:24px 22px;}
+  .closer h2{font-size:26px;color:var(--red);}
+  .closer p{color:var(--ink);font-size:15px;margin-top:12px;}
+  .closer .sign{font-family:'Bebas Neue';font-size:20px;letter-spacing:.03em;
+    margin-top:20px;color:var(--ink);}
+  footer{text-align:center;color:#555;font-size:12px;margin-top:36px;letter-spacing:.03em;}
+  .pill{display:inline-block;background:rgba(63,174,107,.14);color:var(--green);
+    border:1px solid rgba(63,174,107,.35);padding:3px 11px;border-radius:100px;
+    font-size:12px;font-weight:700;letter-spacing:.03em;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="mark">77</span><b>ROTA&nbsp;77</b></div>
+  <span class="eyebrow">Seu guia de corridas · Julho 2026</span>
+  <h1>A ROTA 77 <span class="hl">CRESCE</span> COM VOCÊ.</h1>
+  <p class="sub">Cada mês tem mais passageiro pedindo carro na cidade. Preparamos este guia pra te ajudar a aproveitar melhor esse movimento: os horários e os dias em que mais gente chama. É oportunidade pra todo mundo.</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="sec-head">
+      <span class="pill">Seguimos crescendo</span>
+      <h2>NOSSA OPERAÇÃO SÓ AUMENTA</h2>
+      <p>Corridas finalizadas por dia, mês a mês. Em um ano saímos de dezenas para quase 700 por dia — e a curva continua subindo. Mais gente usando a Rota 77 é mais trabalho na rua pra você.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="n">~690</div><div class="l">corridas por dia em julho</div></div>
+      <div class="stat"><div class="n">+9%</div><div class="l">de crescimento no mês</div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-box"><canvas id="growth" role="img" aria-label="Crescimento de corridas por dia de agosto a julho"></canvas></div>
+    </div>
+    <p class="note">📈 <span><b>E não para por aqui.</b> O ritmo de crescimento se mantém firme mês após mês. A tendência é ter cada vez mais corrida disponível pra frota.</span></p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">O cliente confia na gente</span>
+      <h2>QUEM CHAMA, VOLTA A CHAMAR</h2>
+      <p>A cada 10 passageiros que usam a Rota 77 no mês, cerca de 6 e meio voltam a pedir de novo. Um bom atendimento fideliza — e passageiro fiel é corrida garantida pro dia seguinte.</p>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="n" style="color:var(--green)">65%</div><div class="l">dos passageiros são recorrentes</div></div>
+      <div class="stat"><div class="n" style="color:var(--green)">2.180</div><div class="l">passageiros diferentes em 13 dias</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">O mapa da demanda</span>
+      <h2>ONDE ESTÃO AS CORRIDAS</h2>
+      <p>Média de corridas por hora do dia. As barras vermelhas são os momentos de maior movimento — quando mais gente está chamando ao mesmo tempo. É onde tem mais viagem pra pegar.</p>
+    </div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--red)"></i>Maior movimento</span>
+      <span><i class="dot" style="background:#4a90d9"></i>Movimento bom</span>
+      <span><i class="dot" style="background:#333"></i>Mais tranquilo</span>
+    </div>
+    <div class="chart-card">
+      <div class="chart-box-tall"><canvas id="hourly" role="img" aria-label="Demanda por hora do dia com picos as 8h e das 13h as 18h"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="gold-band">
+      <span class="kicker">Horários de ouro</span>
+      <h2>OS MELHORES HORÁRIOS</h2>
+      <p class="lead">São as faixas em que o passageiro mais chama. Estar disponível nelas costuma render mais viagens em menos tempo.</p>
+      <div class="slots">
+        <div class="slot"><span class="time">07h–09h</span><span class="desc">Movimento de trabalho e escola logo cedo.</span></div>
+        <div class="slot"><span class="time">11h30–14h</span><span class="desc">Horário de almoço e retorno. Fluxo constante.</span></div>
+        <div class="slot"><span class="time">16h–19h</span><span class="desc">O maior movimento do dia. Vale a pena estar na rua.</span></div>
+        <div class="slot"><span class="time">Sex e Sáb à noite</span><span class="desc">Fim de semana e madrugada com boa procura.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Como o dia se divide</span>
+      <h2>ONDE FICA O MOVIMENTO</h2>
+      <p>A maior parte das corridas acontece de dia — tarde e manhã concentram o grosso do movimento. Ótimo pra quem quer organizar seus horários de trabalho.</p>
+    </div>
+    <div class="split" id="split"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">A semana</span>
+      <h2>OS DIAS QUE MAIS RENDEM</h2>
+      <p>Sexta é o dia mais movimentado da semana, seguida de quarta e quinta. Domingo é mais calmo, mas quem roda à tarde e à noite encontra boa procura e menos concorrência.</p>
+    </div>
+    <div class="days" id="days"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Pra render mais</span>
+      <h2>DICAS RÁPIDAS</h2>
+    </div>
+    <div class="tips">
+      <div class="tip"><span class="ic">⏰</span><span class="tx">Fique atento aos <b>picos das 16h às 19h</b> — é a faixa com mais chamadas do dia.</span></div>
+      <div class="tip"><span class="ic">🌙</span><span class="tx">Nas <b>sextas e sábados</b>, a noite e a madrugada seguem rendendo bem.</span></div>
+      <div class="tip"><span class="ic">⭐</span><span class="tx">Um <b>bom atendimento</b> traz o passageiro de volta — e ele já representa 65% das corridas.</span></div>
+      <div class="tip"><span class="ic">☀️</span><span class="tx">No <b>domingo à tarde</b> costuma faltar carro. Quem aparece pega mais viagem.</span></div>
+    </div>
+  </section>
+
+  <div class="closer">
+    <h2>ESTAMOS JUNTOS NESSA</h2>
+    <p>Quanto mais a Rota 77 cresce, mais oportunidade tem pra todos. Esse guia é pra te ajudar a aproveitar o melhor de cada dia. Conte com a gente — e bora pra cima!</p>
+    <div class="sign">Bom dia de trabalho a todos! 🚗✅</div>
+  </div>
+
+  <footer>ROTA 77 · Caçapava do Sul · Dados de julho/2026</footer>
+</div>
+
+<script>
+(function(){
+  const RED='#D42B2B', BLUE='#4a90d9', DIM='#333333', INK2='#a9a9a9', GRID='rgba(255,255,255,.06)';
+  Chart.defaults.font.family="'DM Sans',sans-serif";
+  Chart.defaults.color=INK2;
+
+  new Chart(document.getElementById('growth'),{
+    type:'line',
+    data:{labels:['A','S','O','N','D','J','F','M','A','M','J','J'],
+      datasets:[{data:[19,82,135,201,287,318,387,460,498,576,620,690],
+        borderColor:RED,backgroundColor:'rgba(212,43,43,.12)',borderWidth:2.5,
+        fill:true,tension:.3,pointRadius:2.5,pointBackgroundColor:RED,pointBorderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        callbacks:{title:function(){return '';},label:function(c){return Math.round(c.parsed.y)+' corridas/dia';}}}},
+      scales:{
+        y:{beginAtZero:true,grid:{color:GRID},ticks:{color:INK2,font:{size:10},maxTicksLimit:5}},
+        x:{grid:{display:false},ticks:{color:INK2,font:{size:11}}}}}
+  });
+
+  var hv=[10.8,5.1,3.4,2.1,3.2,5.2,11.2,35.2,49.3,36.6,37.8,39,38.8,45.7,44.5,44.8,43.8,52.2,49.2,38.5,29.1,21.4,17.5,15.8];
+  var labels=[];for(var i=0;i<24;i++){labels.push(String(i).padStart(2,'0'));}
+  var colors=hv.map(function(v){return v>=42?RED:(v>=25?BLUE:DIM);});
+  new Chart(document.getElementById('hourly'),{
+    type:'bar',
+    data:{labels:labels,datasets:[{data:hv,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        callbacks:{title:function(c){return c[0].label+'h';},label:function(c){return c.parsed.y.toFixed(0)+' corridas nessa hora';}}}},
+      scales:{
+        y:{beginAtZero:true,grid:{color:GRID},ticks:{color:INK2,font:{size:10},maxTicksLimit:4}},
+        x:{grid:{display:false},ticks:{color:INK2,font:{size:9},autoSkip:false,maxRotation:0,
+          callback:function(v,i){return i%3===0?labels[i]+'h':'';}}}}}
+  });
+
+  var split=[['Tarde · 12h–17h',40],['Manhã · 6h–11h',31],['Noite · 18h–23h',25],['Madrugada · 0h–5h',4]];
+  var sb=document.getElementById('split');
+  split.forEach(function(row){
+    var el=document.createElement('div');el.className='srow';
+    el.innerHTML='<div class="sn">'+row[0]+'</div><div class="track"><div class="fillb" style="width:'+(row[1]/40*100)+'%"></div></div><div class="pc">'+row[1]+'%</div>';
+    sb.appendChild(el);
+  });
+
+  var days=[['Seg',642,''],['Ter',695,''],['Qua',764,'hot'],['Qui',743,'hot'],
+            ['Sex',811,'top'],['Sáb',632,''],['Dom',480,'']];
+  var max=Math.max.apply(null,days.map(function(d){return d[1];}));
+  var box=document.getElementById('days');
+  days.forEach(function(d){
+    var el=document.createElement('div');el.className='day'+(d[2]?' '+d[2]:'');
+    el.innerHTML='<div class="bar" style="height:'+(d[1]/max*100)+'%"></div><div class="dl">'+d[0]+'</div>';
+    box.appendChild(el);
+  });
+})();
+</script>
+</body>
+</html>
